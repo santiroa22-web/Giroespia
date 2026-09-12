@@ -33,11 +33,28 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+// Esquema fijo "Agente Espía": se usa siempre para mantener una identidad visual
+// consistente en todas las pantallas, sin depender del tema del sistema.
+private val SpyColorScheme = lightColorScheme(
+    primary = SpyPrimary,
+    onPrimary = Color.White,
+    secondary = SpyAccentGold,
+    onSecondary = SpyDark,
+    tertiary = SpyAccentGold,
+    background = SpyBackground,
+    onBackground = SpyDark,
+    surface = SpySurface,
+    onSurface = SpyDark,
+    error = TempHot
+)
+
 @Composable
 fun GiroespiaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Dynamic color queda desactivado por defecto: la identidad "Agente Espía"
+    // debe verse igual en todos los dispositivos y no ser reemplazada por
+    // Material You.
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -45,9 +62,7 @@ fun GiroespiaTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        else -> SpyColorScheme
     }
 
     MaterialTheme(

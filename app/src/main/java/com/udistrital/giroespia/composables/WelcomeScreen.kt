@@ -1,53 +1,172 @@
 package com.udistrital.giroespia.composables
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.udistrital.giroespia.ui.theme.SpyAccentGold
+import com.udistrital.giroespia.ui.theme.SpyDark
+import com.udistrital.giroespia.ui.theme.SpyPrimary
+import com.udistrital.giroespia.ui.theme.SpySurface
+import com.udistrital.giroespia.ui.theme.SpyTextSecondary
 
+/**
+ * PANTALLA 1 — INICIO
+ * Presenta la misión, explica brevemente el objetivo del juego y da acceso
+ * a Nueva partida, Instrucciones y Ranking. Estética "agente espía", cálida
+ * y coherente con el ícono de la app.
+ */
 @Composable
 fun WelcomeScreen(
-    onStartGame: () -> Unit
+    onStartGame: () -> Unit,
+    onOpenHelp: () -> Unit,
+    onOpenRanking: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 28.dp, vertical = 40.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = "CALIENTE / FRÍO", fontSize = 28.sp)
-        Text(text = "¡Encuéntralo!", fontSize = 20.sp)
+        Spacer(modifier = Modifier.height(4.dp))
 
-        Spacer(modifier = Modifier.height(32.dp))
+        // --- Emblema de misión ---
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(SpyDark),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Radar,
+                    contentDescription = "Emblema de misión de espionaje",
+                    tint = SpyAccentGold,
+                    modifier = Modifier.size(64.dp)
+                )
+            }
 
-        Button(
-            onClick = onStartGame,
-            modifier = Modifier.fillMaxWidth(0.8f)
-        ) {
-            Text(text = "NUEVA PARTIDA")
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = "GIRO ESPÍA",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = SpyDark,
+                letterSpacing = 2.sp
+            )
+            Text(
+                text = "M A S T E R",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = SpyAccentGold,
+                letterSpacing = 6.sp
+            )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(
-            onClick = { /* TODO: Ranking */ },
-            modifier = Modifier.fillMaxWidth(0.8f)
+        // --- Tarjeta de misión ---
+        Column(
+            modifier = Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(SpySurface)
+                .padding(horizontal = 24.dp, vertical = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "RANKING")
+            Text(
+                text = "Encuentra al agente oculto utilizando la orientación de tu teléfono.",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = SpyDark,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "¿Estás listo para la misión?",
+                fontSize = 14.sp,
+                color = SpyTextSecondary,
+                textAlign = TextAlign.Center
+            )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(
-            onClick = { /* TODO: Configuración */ },
-            modifier = Modifier.fillMaxWidth(0.8f)
+        // --- Acciones ---
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "CONFIGURACIÓN")
+            Button(
+                onClick = onStartGame,
+                colors = ButtonDefaults.buttonColors(containerColor = SpyPrimary),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .height(56.dp)
+            ) {
+                Text(text = "NUEVA PARTIDA", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedButton(
+                onClick = onOpenHelp,
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = SpyDark),
+                border = OutlinedButtonDefaults.outlinedButtonBorder(enabled = true),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .height(52.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.HelpOutline,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "INSTRUCCIONES", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedButton(
+                onClick = onOpenRanking,
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = SpyDark),
+                border = OutlinedButtonDefaults.outlinedButtonBorder(enabled = true),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .height(52.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.EmojiEvents,
+                    contentDescription = null,
+                    tint = SpyAccentGold,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "RANKING", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,33 +13,46 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.udistrital.giroespia.R
+import com.udistrital.giroespia.ui.theme.SpyDark
+import com.udistrital.giroespia.ui.theme.SpyPanel
+import com.udistrital.giroespia.ui.theme.SpySurface
 import kotlinx.coroutines.delay
 import java.util.Locale
 import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 
 @Composable
 fun GameScreen(
     maxTimeSeconds: Int = 45,
     onBackToMenu: () -> Unit,
+    onRestart: () -> Unit,
     onGameFinished: (score: Int, timeUsed: Int, precisionError: Float, isVictory: Boolean) -> Unit
 ) {
     val context = LocalContext.current
 
+    // ---- LÓGICA DEL JUEGO (sin cambios) ----
     var currentAngle by remember { mutableFloatStateOf(0f) }
     var timeLeft by remember { mutableIntStateOf(maxTimeSeconds) }
 
@@ -99,6 +113,7 @@ fun GameScreen(
             sensorManager.unregisterListener(listener)
         }
     }
+    // ---- FIN LÓGICA DEL JUEGO ----
 
     val coldColor = colorResource(id = R.color.temp_cold)
     val warmColor = colorResource(id = R.color.temp_warm)
@@ -110,6 +125,12 @@ fun GameScreen(
         else -> "Frío"
     }
 
+    val stateColor = when {
+        shortestDistance < 15f -> hotColor
+        shortestDistance < 45f -> warmColor
+        else -> coldColor
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -118,7 +139,7 @@ fun GameScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // CABECERA AJUSTADA (Reloj más grande y posición ligeramente más arriba)
+        // CABECERA (atrás, reiniciar, temporizador, puntuación)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -126,27 +147,43 @@ fun GameScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 1. Botón Atrás
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFFF3F4E8))
-                    .clickable { onBackToMenu() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Volver al menú",
-                    tint = Color(0xFF1E2614)
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(SpySurface)
+                        .clickable { onBackToMenu() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Volver al menú",
+                        tint = SpyDark
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(SpySurface)
+                        .clickable { onRestart() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Reiniciar misión",
+                        tint = SpyDark
+                    )
+                }
             }
 
-            // 2. Tarjeta del Temporizador (Reloj más grande)
+            // Tarjeta del Temporizador
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFFF3F4E8))
+                    .background(SpySurface)
                     .padding(horizontal = 18.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -154,24 +191,21 @@ fun GameScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        text = "⏱ ",
-                        fontSize = 22.sp
-                    )
+                    Text(text = "⏱ ", fontSize = 22.sp)
                     Text(
                         text = formattedTime,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E2614)
+                        color = SpyDark
                     )
                 }
             }
 
-            // 3. Tarjeta de Puntos
+            // Tarjeta de Puntos
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFFF3F4E8))
+                    .background(SpySurface)
                     .padding(horizontal = 12.dp, vertical = 6.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -180,27 +214,39 @@ fun GameScreen(
                         text = "Puntos",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1E2614)
+                        color = SpyDark
                     )
                     Text(
                         text = "$currentCalculatedPoints",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E2614)
+                        color = SpyDark
                     )
                 }
             }
         }
 
-        // ZONA CENTRAL
+        // ZONA CENTRAL: estado + radar de orientación
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = stateText,
                 fontSize = 36.sp,
-                fontWeight = FontWeight.ExtraBold
+                fontWeight = FontWeight.ExtraBold,
+                color = stateColor
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Radar: muestra SOLO la orientación actual del jugador (la aguja),
+            // nunca la dirección objetivo. El color del anillo cambia según
+            // la proximidad (frío/tibio/caliente) para reforzar la búsqueda.
+            OrientationRadar(
+                currentAngleDegrees = normalizedAngle,
+                ringColor = stateColor,
+                proximity = proximityProgress
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             if (shortestDistance < 15f) {
                 Button(
@@ -215,9 +261,10 @@ fun GameScreen(
                         }
                         val finalScore = baseScore + timeBonus + precisionBonus
                         onGameFinished(finalScore, timeUsed, shortestDistance, true)
-                    }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = hotColor)
                 ) {
-                    Text(text = "¡ENCONTRADO!", fontSize = 18.sp)
+                    Text(text = "¡ENCONTRADO!", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -227,7 +274,7 @@ fun GameScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(12.dp))
+                .background(SpyPanel, shape = RoundedCornerShape(12.dp))
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -250,6 +297,7 @@ fun GameScreen(
                             colors = listOf(coldColor, warmColor, hotColor)
                         )
                     )
+                    .semantics { contentDescription = "Nivel de proximidad: $stateText" }
             ) {
                 Box(
                     modifier = Modifier
@@ -275,6 +323,73 @@ fun GameScreen(
                 Text(text = "Tibio", fontSize = 12.sp, color = warmColor)
                 Text(text = "Caliente", fontSize = 12.sp, color = hotColor)
             }
+        }
+    }
+}
+
+/**
+ * Radar circular tipo "brújula de agente": dibuja anillos concéntricos y una
+ * aguja que apunta hacia donde está orientado el teléfono en este momento.
+ * NUNCA dibuja ni insinúa la dirección objetivo — solo ayuda al jugador a
+ * entender hacia dónde está girando mientras busca.
+ */
+@Composable
+private fun OrientationRadar(
+    currentAngleDegrees: Float,
+    ringColor: Color,
+    proximity: Float
+) {
+    Box(
+        modifier = Modifier
+            .size(220.dp)
+            .semantics {
+                contentDescription = "Radar de orientación del teléfono"
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val center = Offset(size.width / 2f, size.height / 2f)
+            val maxRadius = size.minDimension / 2f
+
+            // Anillos concéntricos de fondo (estética de radar)
+            val ringColors = listOf(
+                SpyDark.copy(alpha = 0.10f),
+                SpyDark.copy(alpha = 0.10f),
+                SpyDark.copy(alpha = 0.10f)
+            )
+            ringColors.forEachIndexed { index, color ->
+                val fraction = (index + 1) / ringColors.size.toFloat()
+                drawCircle(
+                    color = color,
+                    radius = maxRadius * fraction,
+                    center = center,
+                    style = Stroke(width = 2.dp.toPx())
+                )
+            }
+
+            // Anillo de proximidad: su grosor y opacidad crecen al acercarse
+            drawCircle(
+                color = ringColor.copy(alpha = 0.25f + 0.5f * proximity),
+                radius = maxRadius * 0.92f,
+                center = center,
+                style = Stroke(width = (4 + 10 * proximity).dp.toPx())
+            )
+
+            // Aguja: apunta hacia la orientación ACTUAL del teléfono (0° = arriba)
+            val angleRad = Math.toRadians((currentAngleDegrees - 90f).toDouble())
+            val needleLength = maxRadius * 0.75f
+            val tip = Offset(
+                x = center.x + (needleLength * cos(angleRad)).toFloat(),
+                y = center.y + (needleLength * sin(angleRad)).toFloat()
+            )
+            drawLine(
+                color = SpyDark,
+                start = center,
+                end = tip,
+                strokeWidth = 6.dp.toPx()
+            )
+            drawCircle(color = SpyDark, radius = 8.dp.toPx(), center = center)
+            drawCircle(color = ringColor, radius = 10.dp.toPx(), center = tip)
         }
     }
 }

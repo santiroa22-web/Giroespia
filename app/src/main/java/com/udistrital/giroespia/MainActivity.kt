@@ -4,12 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.udistrital.giroespia.composables.GameScreen
+import com.udistrital.giroespia.composables.HelpScreen
+import com.udistrital.giroespia.composables.RankingScreen
 import com.udistrital.giroespia.composables.ResultScreen
 import com.udistrital.giroespia.composables.WelcomeScreen
 import com.udistrital.giroespia.enums.TypeScreen
@@ -26,24 +29,47 @@ class MainActivity : ComponentActivity() {
                 var lastPrecisionError by remember { mutableFloatStateOf(0f) }
                 var isVictory by remember { mutableStateOf(false) }
 
+                // gameSessionId cambia cada vez que se reinicia una partida.
+                // Al usarse como key() alrededor de GameScreen, fuerza a Compose a
+                // crear una instancia nueva (ángulo objetivo y temporizador nuevos)
+                // sin tocar la lógica interna del juego.
+                var gameSessionId by remember { mutableIntStateOf(0) }
+
                 when (currentScreen) {
                     TypeScreen.WELCOME -> {
                         WelcomeScreen(
-                            onStartGame = { currentScreen = TypeScreen.GAME }
+                            onStartGame = {
+                                gameSessionId++
+                                currentScreen = TypeScreen.GAME
+                            },
+                            onOpenHelp = { currentScreen = TypeScreen.HELP },
+                            onOpenRanking = { currentScreen = TypeScreen.RANKING }
+                        )
+                    }
+                    TypeScreen.HELP -> {
+                        HelpScreen(
+                            onStartMission = {
+                                gameSessionId++
+                                currentScreen = TypeScreen.GAME
+                            },
+                            onBackToMenu = { currentScreen = TypeScreen.WELCOME }
                         )
                     }
                     TypeScreen.GAME -> {
-                        GameScreen(
-                            maxTimeSeconds = 45,
-                            onBackToMenu = { currentScreen = TypeScreen.WELCOME },
-                            onGameFinished = { score, timeUsed, precisionError, victory ->
-                                lastScore = score
-                                lastTimeUsed = timeUsed
-                                lastPrecisionError = precisionError
-                                isVictory = victory
-                                currentScreen = TypeScreen.RESULT
-                            }
-                        )
+                        key(gameSessionId) {
+                            GameScreen(
+                                maxTimeSeconds = 45,
+                                onBackToMenu = { currentScreen = TypeScreen.WELCOME },
+                                onRestart = { gameSessionId++ },
+                                onGameFinished = { score, timeUsed, precisionError, victory ->
+                                    lastScore = score
+                                    lastTimeUsed = timeUsed
+                                    lastPrecisionError = precisionError
+                                    isVictory = victory
+                                    currentScreen = TypeScreen.RESULT
+                                }
+                            )
+                        }
                     }
                     TypeScreen.RESULT -> {
                         ResultScreen(
@@ -51,7 +77,16 @@ class MainActivity : ComponentActivity() {
                             timeUsed = lastTimeUsed,
                             precisionError = lastPrecisionError,
                             isVictory = isVictory,
-                            onPlayAgain = { currentScreen = TypeScreen.GAME },
+                            onPlayAgain = {
+                                gameSessionId++
+                                currentScreen = TypeScreen.GAME
+                            },
+                            onBackToMenu = { currentScreen = TypeScreen.WELCOME },
+                            onViewRanking = { currentScreen = TypeScreen.RANKING }
+                        )
+                    }
+                    TypeScreen.RANKING -> {
+                        RankingScreen(
                             onBackToMenu = { currentScreen = TypeScreen.WELCOME }
                         )
                     }

@@ -12,4 +12,13 @@
     <color name="temp_cold">#2196F3</color>
     <color name="temp_warm">#FFC107</color>
     <color name="temp_hot">#F44336</color>
+
+    <!-- Identidad visual "Agente Espía" (coherente con el ícono de la app) -->
+    <color name="spy_background">#F5F1E3</color>
+    <color name="spy_surface">#F3F4E8</color>
+    <color name="spy_dark">#1E2614</color>
+    <color name="spy_panel">#1E1E1E</color>
+    <color name="spy_primary">#3F5C3A</color>
+    <color name="spy_accent_gold">#C9A227</color>
+    <color name="spy_text_secondary">#5B6B54</color>
 </resources>
