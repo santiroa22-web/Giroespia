@@ -29,10 +29,6 @@ class MainActivity : ComponentActivity() {
                 var lastPrecisionError by remember { mutableFloatStateOf(0f) }
                 var isVictory by remember { mutableStateOf(false) }
 
-                // gameSessionId cambia cada vez que se reinicia una partida.
-                // Al usarse como key() alrededor de GameScreen, fuerza a Compose a
-                // crear una instancia nueva (ángulo objetivo y temporizador nuevos)
-                // sin tocar la lógica interna del juego.
                 var gameSessionId by remember { mutableIntStateOf(0) }
 
                 when (currentScreen) {
@@ -58,7 +54,7 @@ class MainActivity : ComponentActivity() {
                     TypeScreen.GAME -> {
                         key(gameSessionId) {
                             GameScreen(
-                                maxTimeSeconds = 45,
+                                maxTimeSeconds = 15,
                                 onBackToMenu = { currentScreen = TypeScreen.WELCOME },
                                 onRestart = { gameSessionId++ },
                                 onGameFinished = { score, timeUsed, precisionError, victory ->

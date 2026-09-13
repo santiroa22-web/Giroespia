@@ -12,7 +12,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedButtonDefaults
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -144,7 +144,7 @@ fun ResultScreen(
         OutlinedButton(
             onClick = onBackToMenu,
             colors = ButtonDefaults.outlinedButtonColors(contentColor = SpyDark),
-            border = OutlinedButtonDefaults.outlinedButtonBorder(enabled = true),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth(0.85f)

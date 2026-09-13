@@ -1,5 +1,8 @@
 package com.udistrital.giroespia.composables
 
+import android.media.AudioManager
+import android.media.ToneGenerator
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -13,13 +16,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -29,6 +30,16 @@ import com.udistrital.giroespia.ui.theme.SpyDark
 import com.udistrital.giroespia.ui.theme.SpyPrimary
 import com.udistrital.giroespia.ui.theme.SpySurface
 import com.udistrital.giroespia.ui.theme.SpyTextSecondary
+
+/**
+ * Emite un sonido de clic táctico corto usando ToneGenerator sin requerir archivos mp3 externos.
+ */
+private fun playButtonClickSound() {
+    try {
+        val toneGen = ToneGenerator(AudioManager.STREAM_MUSIC, 80)
+        toneGen.startTone(ToneGenerator.TONE_PROP_BEEP, 25)
+    } catch (_: Exception) {}
+}
 
 /**
  * PANTALLA 1 — INICIO
@@ -117,7 +128,10 @@ fun WelcomeScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Button(
-                onClick = onStartGame,
+                onClick = {
+                    playButtonClickSound()
+                    onStartGame()
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = SpyPrimary),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
@@ -130,9 +144,12 @@ fun WelcomeScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedButton(
-                onClick = onOpenHelp,
+                onClick = {
+                    playButtonClickSound()
+                    onOpenHelp()
+                },
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = SpyDark),
-                border = OutlinedButtonDefaults.outlinedButtonBorder(enabled = true),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
@@ -150,9 +167,12 @@ fun WelcomeScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedButton(
-                onClick = onOpenRanking,
+                onClick = {
+                    playButtonClickSound()
+                    onOpenRanking()
+                },
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = SpyDark),
-                border = OutlinedButtonDefaults.outlinedButtonBorder(enabled = true),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth(0.85f)

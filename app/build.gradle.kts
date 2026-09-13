@@ -36,6 +36,8 @@ android {
 }
 
 dependencies {
+    implementation(platform("androidx.compose:compose-bom:2024.02.01"))
+    implementation("androidx.compose.material3:material3")
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
